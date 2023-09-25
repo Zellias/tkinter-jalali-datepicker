@@ -141,20 +141,7 @@ if __name__ == "__main__":
             result_label.config(text="خطا در تبدیل به میلادی")
 
 
-    def convert_to_jalali():
-        gregorian_date_str = entry_gregorian.get()
-        try:
-            gregorian_parts = gregorian_date_str.split('/')
-            gregorian_day = int(gregorian_parts[1])
-            gregorian_month = int(gregorian_parts[0])
-            gregorian_year = int(gregorian_parts[2])
 
-            jalili_date = jdatetime.date.fromgregorian(
-                day=gregorian_day, month=gregorian_month, year=gregorian_year)
-            result_label_gregorian.config(
-                text=f"جلالی: {jalili_date.strftime('%Y-%m-%d')}")
-        except Exception as e:
-            result_label_gregorian.config(text="خطا در تبدیل به جلالی")
 
 
 
@@ -162,22 +149,4 @@ if __name__ == "__main__":
     result_label_gregorian = ttk.Label(root, text="")
     result_label_gregorian.pack()
     button.pack()
-    button_convert = ttk.Button(
-        root, text="تبدیل به میلادی", command=convert_to_gregorian)
-    button_convert.pack()
-
-    result_label = ttk.Label(root, text="")
-    result_label.pack()
-
-    entry_gregorian = DateEntry(root, width=12, background="darkblue",
-                                foreground="white", font=("Arial", 10), date_pattern='MM/dd/yyyy')
-    entry_gregorian.pack(pady=10)
-
-    button_convert_gregorian = ttk.Button(
-        root, text="تبدیل به جلالی", command=convert_to_jalali)
-    button_convert_gregorian.pack()
-
-    result_label_gregorian = ttk.Label(root, text="")
-    result_label_gregorian.pack()
-
     root.mainloop()
