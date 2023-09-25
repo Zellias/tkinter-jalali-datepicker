@@ -65,7 +65,7 @@ class JalaliDatepicker(tk.Toplevel):
         month = self.selected_date.month
 
         if month == 12:
-            num_days = 29
+            num_days = 30 if self.is_leap_year(year+1) else 29
         else:
             num_days = (JalaliDate(year, month + 1, 1) -
                         JalaliDate(year, month, 1)).days
@@ -83,11 +83,8 @@ class JalaliDatepicker(tk.Toplevel):
 
     def update_display(self):
         self.date_label.config(text=self.selected_date.strftime("%d %B %Y"))
-
         self.month_dropdown.set(self.selected_date.strftime("%B"))
-
         self.year_dropdown.set(self.selected_date.year)
-
         self.create_calendar()
 
     def update_month(self, event):
@@ -95,6 +92,8 @@ class JalaliDatepicker(tk.Toplevel):
         month_index = self.month_dropdown['values'].index(selected_month) + 1
         self.selected_date = JalaliDate(
             self.selected_date.year, month_index, 1)
+        if month_index == 12:
+            self.create_calendar()
         self.update_display()
 
     def update_year(self, event):
@@ -106,16 +105,18 @@ class JalaliDatepicker(tk.Toplevel):
     def select_date(self, day):
         self.selected_date = JalaliDate(
             self.selected_date.year, self.selected_date.month, day)
-
         self.target_entry.delete(0, tk.END)
         self.target_entry.insert(0, self.selected_date.strftime("%Y-%m-%d"))
 
         self.destroy()
 
+    def is_leap_year(self, year):
+        return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
-
+    root.geometry('300x300')
     entry = ttk.Entry(root)
     entry.pack(pady=10)
 
@@ -123,11 +124,60 @@ if __name__ == "__main__":
         datepicker = JalaliDatepicker(root, entry)
         datepicker.grab_set()
 
+    def convert_to_gregorian():
+        jalali_date = entry.get()
+        try:
+            jalali_parts = jalali_date.split('-')
+            jalali_year = int(jalali_parts[0])
+            jalali_month = int(jalali_parts[1])
+            jalali_day = int(jalali_parts[2])
+
+            gregorian_date = JalaliDate(
+                jalali_year, jalali_month, jalali_day).togregorian()
+
+            result_label.config(
+                text=f"میلادی: {gregorian_date.strftime('%Y-%m-%d')}")
+        except Exception as e:
+            result_label.config(text="خطا در تبدیل به میلادی")
+
+
+    def convert_to_jalali():
+        gregorian_date_str = entry_gregorian.get()
+        try:
+            gregorian_parts = gregorian_date_str.split('/')
+            gregorian_day = int(gregorian_parts[1])
+            gregorian_month = int(gregorian_parts[0])
+            gregorian_year = int(gregorian_parts[2])
+
+            jalili_date = jdatetime.date.fromgregorian(
+                day=gregorian_day, month=gregorian_month, year=gregorian_year)
+            result_label_gregorian.config(
+                text=f"جلالی: {jalili_date.strftime('%Y-%m-%d')}")
+        except Exception as e:
+            result_label_gregorian.config(text="خطا در تبدیل به جلالی")
+
+
 
     button = ttk.Button(root, text="بازکردن تقویم", command=open_datepicker)
     result_label_gregorian = ttk.Label(root, text="")
     result_label_gregorian.pack()
     button.pack()
+    button_convert = ttk.Button(
+        root, text="تبدیل به میلادی", command=convert_to_gregorian)
+    button_convert.pack()
 
+    result_label = ttk.Label(root, text="")
+    result_label.pack()
+
+    entry_gregorian = DateEntry(root, width=12, background="darkblue",
+                                foreground="white", font=("Arial", 10), date_pattern='MM/dd/yyyy')
+    entry_gregorian.pack(pady=10)
+
+    button_convert_gregorian = ttk.Button(
+        root, text="تبدیل به جلالی", command=convert_to_jalali)
+    button_convert_gregorian.pack()
+
+    result_label_gregorian = ttk.Label(root, text="")
+    result_label_gregorian.pack()
 
     root.mainloop()
